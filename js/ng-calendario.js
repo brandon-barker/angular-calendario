@@ -2,41 +2,50 @@
   'use strict';
 
   // src/js/
-  var ngCalendario = angular.module('ngCalendario', []);
+  angular.module('ngCalendario', [])
 
-  ngCalendario.provider('$calendario', [function () {
-    this.$get = [function () {
-      var defaults = {
-        weeks : [ 'Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday' ],
-        weekabbrs : [ 'Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat' ],
-        months : [ 'January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December' ],
-        monthabbrs : [ 'Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec' ],
-        // choose between values in options.weeks or options.weekabbrs
-        displayWeekAbbr : false,
-        // choose between values in options.months or options.monthabbrs
-        displayMonthAbbr : false,
-        // left most day in the calendar
-        // 0 - Sunday, 1 - Monday, ... , 6 - Saturday
-        startIn : 1,
-      };
-      var calendarioOptions = defaults;
+  angular.module('ngCalendario').provider('$calendario', calendarioProvider);
 
-      var $calendario = function() {};
+  calendarioProvider.$inject = [];
 
-      $calendario.setOptions = function(options) {
-        calendarioOptions = angular.extend(calendarioOptions, options);
-      };
+  function calendarioProvider() {
+    var defaults = {
+      weeks: [ 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'],
+      weekabbrs: [ 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun' ],
+      months : [ 'January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December' ],
+      monthabbrs : [ 'Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec' ],
+      // choose between values in options.weeks or options.weekabbrs
+      displayWeekAbbr : true,
+      // choose between values in options.months or options.monthabbrs
+      displayMonthAbbr : false,
+      // left most day in the calendar
+      // 0 - Sunday, 1 - Monday, ... , 6 - Saturday
+      startIn : 0
+    };
 
-      $calendario.getOptions = function() {
-        return calendarioOptions;
-      };
+    var calendarioOptions = defaults;
 
-      return $calendario;
-    }];
-  }]);
+    this.setOptions = function(options) {
+      calendarioOptions = angular.extend(calendarioOptions, options);
+    };
 
+    this.getOptions = function() {
+      return calendarioOptions;
+    };
 
-  ngCalendario.directive('calendario', ['$calendario', '$rootScope', function($calendario, $rootScope) {
+    this.$get = function () {
+      return {
+        setOptions: this.setOptions,
+        getOptions: this.getOptions
+      }
+    };
+  }
+
+  angular.module('ngCalendario').directive('calendario', calendarioDirective);
+
+  calendarioDirective.$inject = ['$calendario'];
+
+  function calendarioDirective($calendario) {
     return {
       restrict: 'E',
       require: 'ngModel',
@@ -91,17 +100,17 @@
 
         $scope.hidePrevMonth = function () {
           return (
-            angular.isDefined($scope.minYear) &&
-            angular.isDefined($scope.minMonth) &&
-            $scope.minYear*100+$scope.minMonth >= $scope.calendario.getYear()*100+$scope.calendario.getMonth()
+          angular.isDefined($scope.minYear) &&
+          angular.isDefined($scope.minMonth) &&
+          $scope.minYear*100+$scope.minMonth >= $scope.calendario.getYear()*100+$scope.calendario.getMonth()
           );
         };
 
         $scope.hideNextMonth = function () {
           return (
-            angular.isDefined($scope.maxYear) &&
-            angular.isDefined($scope.maxMonth) &&
-            $scope.maxYear*100+$scope.maxMonth <= $scope.calendario.getYear()*100+$scope.calendario.getMonth()
+          angular.isDefined($scope.maxYear) &&
+          angular.isDefined($scope.maxMonth) &&
+          $scope.maxYear*100+$scope.maxMonth <= $scope.calendario.getYear()*100+$scope.calendario.getMonth()
           );
         };
 
@@ -124,9 +133,7 @@
           onDayClick: $scope.onDayClick
         });
         $scope.calendario = $element.find('.fc-calendar-container').calendario($calendario.getOptions());
-
-
       }
     };
-  }]);
+  }
 })(angular);
